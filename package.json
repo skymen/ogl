@@ -42,5 +42,8 @@
         "tabWidth": 4,
         "trailingComma": "es5",
         "useTabs": false
+    },
+    "devDependencies": {
+        "@rollup/plugin-terser": "^0.4.4"
     }
 }
