@@ -13,15 +13,24 @@ export class Transform {
         this.worldMatrix = new Mat4();
         this.matrixAutoUpdate = true;
         this.worldMatrixNeedsUpdate = false;
+        this.matrixNeedsUpdate = false;
 
         this.position = new Vec3();
+        this.oldPosition = this.position.clone();
         this.quaternion = new Quat();
         this.scale = new Vec3(1);
+        this.oldScale = this.scale.clone();
         this.rotation = new Euler();
         this.up = new Vec3(0, 1, 0);
 
-        this.rotation._target.onChange = () => this.quaternion.fromEuler(this.rotation, true);
-        this.quaternion._target.onChange = () => this.rotation.fromQuaternion(this.quaternion, undefined, true);
+        this.rotation._target.onChange = () => {
+            this.quaternion.fromEuler(this.rotation, true);
+            this.matrixNeedsUpdate = true;
+        };
+        this.quaternion._target.onChange = () => {
+            this.rotation.fromQuaternion(this.quaternion, undefined, true);
+            this.matrixNeedsUpdate = true;
+        };
     }
 
     setParent(parent, notifyParent = true) {
@@ -40,7 +49,7 @@ export class Transform {
         if (notifyChild) child.setParent(null, false);
     }
 
-    updateMatrixWorld(force) {
+    updateMatrixWorld(force = false) {
         if (this.matrixAutoUpdate) this.updateMatrix();
         if (this.worldMatrixNeedsUpdate || force) {
             if (this.parent === null) this.worldMatrix.copy(this.matrix);
@@ -54,9 +63,17 @@ export class Transform {
         }
     }
 
-    updateMatrix() {
-        this.matrix.compose(this.quaternion, this.position, this.scale);
-        this.worldMatrixNeedsUpdate = true;
+    updateMatrix(force = false) {
+        if (!this.oldPosition.equals(this.position) || !this.oldScale.equals(this.scale)) {
+            this.matrixNeedsUpdate = true;
+            this.oldPosition.copy(this.position);
+            this.oldScale.copy(this.scale);
+        }
+        if (this.matrixNeedsUpdate || force) {
+            this.matrix.compose(this.quaternion, this.position, this.scale);
+            this.matrixNeedsUpdate = false;
+            this.worldMatrixNeedsUpdate = true;
+        }
     }
 
     traverse(callback) {
