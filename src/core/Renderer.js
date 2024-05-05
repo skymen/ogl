@@ -15,7 +15,7 @@ let ID = 1;
 
 export class Renderer {
     constructor({
-        canvas = document.createElement('canvas'),
+        canvas = null,
         width = 300,
         height = 150,
         dpr = 1,
@@ -29,6 +29,14 @@ export class Renderer {
         autoClear = true,
         webgl = 2,
     } = {}) {
+        if (!canvas) {
+            // create new canvas or offscreen canvas if in worker
+            if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+                canvas = new OffscreenCanvas(width * dpr, height * dpr);
+            } else {
+                canvas = document.createElement('canvas');
+            }
+        }
         const attributes = { alpha, depth, stencil, antialias, premultipliedAlpha, preserveDrawingBuffer, powerPreference };
         this.dpr = dpr;
         this.alpha = alpha;
