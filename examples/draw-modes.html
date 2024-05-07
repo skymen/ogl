@@ -103,6 +103,7 @@
                 const triangles = new Mesh(gl, { mode: gl.TRIANGLES, geometry, program });
                 triangles.setParent(scene);
                 triangles.position.set(1, -1, 0);
+                window.triangles = triangles;
 
                 // OTHER MODES NOT FEATURED:
                 // gl.LINE_STRIP: Draws a straight line to the next vertex. Does not connect first and last vertices like gl.LINE_LOOP,
